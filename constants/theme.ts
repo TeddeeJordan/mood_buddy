@@ -34,6 +34,25 @@ export const Themes: Record<ThemeName, ThemePalette> = {
   },
 };
 
+export const Colors = {
+  light: {
+    text: Themes.lavender.text,
+    background: Themes.lavender.background,
+    tint: Themes.lavender.primary,
+    icon: Themes.lavender.secondary,
+    tabIconDefault: Themes.lavender.secondary,
+    tabIconSelected: Themes.lavender.primary,
+  },
+  dark: {
+    text: '#ECEDEE',
+    background: '#151718',
+    tint: '#FFFFFF',
+    icon: '#9BA1A6',
+    tabIconDefault: '#9BA1A6',
+    tabIconSelected: '#FFFFFF',
+  },
+};
+
 export const Fonts = Platform.select({
   ios: {
     sans: 'system-ui',
