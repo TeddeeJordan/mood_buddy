@@ -37,3 +37,23 @@ export function insertMoodEntry(entry: Omit<MoodEntry, 'id'>) {
 export function getAllEntries(): MoodEntry[] {
   return db.getAllSync<MoodEntry>('SELECT * FROM mood_entries ORDER BY timestamp DESC');
 }
+
+export function getEntriesForDateRange(startISO: string, endISO: string): MoodEntry[] {
+  return db.getAllSync<MoodEntry>(
+    'SELECT * FROM mood_entries WHERE timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC',
+    [startISO, endISO],
+  );
+}
+
+export function getAllEntryDates(): string[] {
+  const rows = db.getAllSync<{ timestamp: string }>(
+    'SELECT timestamp FROM mood_entries ORDER BY timestamp DESC',
+  );
+  const seen = new Set<string>();
+  for (const { timestamp } of rows) {
+    const d = new Date(timestamp);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    seen.add(key);
+  }
+  return [...seen];
+}
