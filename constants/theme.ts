@@ -1,41 +1,44 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export type ThemeName = 'lavender' | 'sage' | 'water';
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+export type ThemePalette = {
+  text: string;
+  background: string;
+  primary: string;
+  secondary: string;
+  tertiary: string;
+};
+
+export const Themes: Record<ThemeName, ThemePalette> = {
+  lavender: {
+    text: '#4D4952',
+    background: '#EEEEF8',
+    primary: '#C47ED0',
+    secondary: '#A882CB',
+    tertiary: '#DFBFEC',
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+  sage: {
+    text: '#4D4952',
+    background: '#EEEEF5',
+    primary: '#8DC48D',
+    secondary: '#D4DF8A',
+    tertiary: '#C4E8C8',
+  },
+  water: {
+    text: '#4D4952',
+    background: '#EAEAF5',
+    primary: '#4AA8C8',
+    secondary: '#5CD4E8',
+    tertiary: '#8CE0EC',
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
