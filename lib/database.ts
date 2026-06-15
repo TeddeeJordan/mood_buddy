@@ -2,6 +2,9 @@ import * as SQLite from 'expo-sqlite';
 
 const db = SQLite.openDatabaseSync('moodbuddy.db');
 
+// Settings table is needed synchronously by ThemeContext before useEffects fire
+db.execSync('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+
 export type MoodEntry = {
   id: number;
   timestamp: string;
@@ -73,6 +76,18 @@ export function saveProfile(profile: Profile) {
     'UPDATE profile SET bio = ?, photo_uri = ? WHERE id = 1',
     [profile.bio, profile.photo_uri ?? null],
   );
+}
+
+export function getSetting(key: string): string | null {
+  try {
+    return db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', [key])?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function setSetting(key: string, value: string): void {
+  db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [key, value]);
 }
 
 export function getAllEntryDates(): string[] {

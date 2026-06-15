@@ -41,11 +41,18 @@
       ],
       "expo-sqlite",
       [
+        "expo-notifications",
+        {
+          "defaultChannel": "default"
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Allow Mood Buddy to access your photos to set your profile picture."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

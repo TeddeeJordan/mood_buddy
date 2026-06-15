@@ -1,17 +1,84 @@
 import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Appbar, Button, Text, TextInput } from 'react-native-paper';
 import { EmojiPicker } from '@/components/emoji-picker';
 import { ANXIETY_OPTIONS, MOOD_OPTIONS, STRESS_OPTIONS } from '@/constants/mood-data';
-import { Themes } from '@/constants/theme';
+import type { ThemePalette } from '@/constants/theme';
+import { useAppTheme } from '@/context/ThemeContext';
 import { insertMoodEntry } from '@/lib/database';
+
+function makeStyles(theme: ThemePalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    appbar: {
+      backgroundColor: theme.background,
+    },
+    appbarTitle: {
+      color: theme.text,
+      fontWeight: '700',
+      fontSize: 20,
+    },
+    scroll: {
+      padding: 16,
+      paddingBottom: 16,
+    },
+    stickyFooter: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      backgroundColor: theme.background,
+      borderTopWidth: 1,
+      borderTopColor: theme.tertiary,
+    },
+    sectionLabel: {
+      color: theme.text,
+      fontWeight: '600',
+      marginTop: 24,
+      marginBottom: 12,
+    },
+    noteBlock: {
+      marginTop: 12,
+    },
+    noteLabel: {
+      fontSize: 14,
+      color: theme.text,
+      fontWeight: '500',
+      marginBottom: 8,
+    },
+    textInput: {
+      backgroundColor: '#FFFFFF',
+    },
+    charCount: {
+      textAlign: 'right',
+      fontSize: 12,
+      color: theme.text,
+      opacity: 0.55,
+      marginTop: 4,
+    },
+    submitButton: {
+      borderRadius: 50,
+    },
+    submitContent: {
+      paddingVertical: 6,
+    },
+    submitLabel: {
+      fontSize: 16,
+      fontWeight: '600',
+      letterSpacing: 0.5,
+    },
+  });
+}
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   const [mood, setMood] = useState<number | null>(null);
   const [stress, setStress] = useState<number | null>(null);
@@ -62,7 +129,7 @@ export default function HomeScreen() {
         <Appbar.Action
           icon="menu"
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          iconColor={Themes.lavender.primary}
+          iconColor={theme.primary}
         />
         <Appbar.Content title="Mood Buddy" titleStyle={styles.appbarTitle} />
       </Appbar.Header>
@@ -137,65 +204,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Themes.lavender.background,
-  },
-  appbar: {
-    backgroundColor: Themes.lavender.background,
-  },
-  appbarTitle: {
-    color: Themes.lavender.text,
-    fontWeight: '700',
-    fontSize: 20,
-  },
-  scroll: {
-    padding: 16,
-    paddingBottom: 16,
-  },
-  stickyFooter: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    backgroundColor: Themes.lavender.background,
-    borderTopWidth: 1,
-    borderTopColor: Themes.lavender.tertiary,
-  },
-  sectionLabel: {
-    color: Themes.lavender.text,
-    fontWeight: '600',
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  noteBlock: {
-    marginTop: 12,
-  },
-  noteLabel: {
-    fontSize: 14,
-    color: Themes.lavender.text,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  textInput: {
-    backgroundColor: '#FFFFFF',
-  },
-  charCount: {
-    textAlign: 'right',
-    fontSize: 12,
-    color: Themes.lavender.text,
-    opacity: 0.55,
-    marginTop: 4,
-  },
-  submitButton: {
-    borderRadius: 50,
-  },
-  submitContent: {
-    paddingVertical: 6,
-  },
-  submitLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-});
