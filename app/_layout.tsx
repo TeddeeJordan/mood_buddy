@@ -5,7 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MD3LightTheme, PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
 import { Themes } from '@/constants/theme';
-import { initDatabase } from '@/lib/database';
+import { initDatabase, initProfile } from '@/lib/database';
 
 export const unstable_settings = {
   anchor: '(drawer)',
@@ -31,6 +31,7 @@ const paperTheme = {
 export default function RootLayout() {
   useEffect(() => {
     initDatabase();
+    initProfile();
   }, []);
 
   return (
