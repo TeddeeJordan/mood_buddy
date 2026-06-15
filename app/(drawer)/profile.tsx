@@ -3,7 +3,7 @@ import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Image,
@@ -15,14 +15,105 @@ import {
   View,
 } from 'react-native';
 import { Appbar } from 'react-native-paper';
-import { Themes } from '@/constants/theme';
+import type { ThemePalette } from '@/constants/theme';
+import { useAppTheme } from '@/context/ThemeContext';
 import { getProfile, saveProfile } from '@/lib/database';
 
-const T = Themes.lavender;
 const BIO_LIMIT = 1000;
+
+function makeStyles(theme: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.background },
+    appbar: { backgroundColor: theme.background },
+    appbarTitle: { color: theme.text, fontWeight: '700', fontSize: 20 },
+    scroll: { padding: 16, paddingBottom: 40, alignItems: 'center', gap: 20 },
+
+    avatarWrap: { marginTop: 16, alignItems: 'center', justifyContent: 'center' },
+    avatar: { width: 120, height: 120, borderRadius: 60 },
+    avatarPlaceholder: {
+      backgroundColor: theme.tertiary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cameraOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: theme.background,
+    },
+
+    card: {
+      width: '100%',
+      backgroundColor: '#FFFFFF',
+      borderRadius: 16,
+      padding: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.07,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    cardLabel: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.primary,
+      marginBottom: 8,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
+    quoteText: {
+      fontSize: 15,
+      color: theme.text,
+      lineHeight: 23,
+      fontStyle: 'italic',
+      marginBottom: 8,
+    },
+    quoteAuthor: {
+      fontSize: 13,
+      color: theme.primary,
+      fontWeight: '600',
+      marginBottom: 10,
+    },
+    quoteAttribution: {
+      fontSize: 11,
+      color: theme.text,
+      opacity: 0.35,
+    },
+    bioText: {
+      fontSize: 15,
+      color: theme.text,
+      lineHeight: 22,
+    },
+    bioPlaceholder: { opacity: 0.4, fontStyle: 'italic' },
+    bioInput: {
+      fontSize: 15,
+      color: theme.text,
+      lineHeight: 22,
+      minHeight: 120,
+      padding: 0,
+    },
+    charCount: {
+      marginTop: 8,
+      fontSize: 12,
+      color: theme.text,
+      opacity: 0.45,
+      textAlign: 'right',
+    },
+  });
+}
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+
   const [editing, setEditing] = useState(false);
   const [bio, setBio] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -88,172 +179,86 @@ export default function ProfileScreen() {
   const currentBio = editing ? draftBio : bio;
 
   return (
-    <View style={s.container}>
-      <Appbar.Header style={s.appbar} elevated>
+    <View style={styles.container}>
+      <Appbar.Header style={styles.appbar} elevated>
         <Appbar.Action
           icon="menu"
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          iconColor={T.primary}
+          iconColor={theme.primary}
         />
-        <Appbar.Content title="Profile" titleStyle={s.appbarTitle} />
+        <Appbar.Content title="Profile" titleStyle={styles.appbarTitle} />
         {editing ? (
           <>
-            <Appbar.Action icon="close" onPress={handleCancel} iconColor={T.text} />
-            <Appbar.Action icon="check" onPress={handleSave} iconColor={T.primary} />
+            <Appbar.Action icon="close" onPress={handleCancel} iconColor={theme.text} />
+            <Appbar.Action icon="check" onPress={handleSave} iconColor={theme.primary} />
           </>
         ) : (
-          <Appbar.Action icon="pencil" onPress={handleEdit} iconColor={T.primary} />
+          <Appbar.Action icon="pencil" onPress={handleEdit} iconColor={theme.primary} />
         )}
       </Appbar.Header>
 
       <ScrollView
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <TouchableOpacity
           onPress={editing ? handlePickPhoto : undefined}
           activeOpacity={editing ? 0.7 : 1}
-          style={s.avatarWrap}
+          style={styles.avatarWrap}
         >
           {currentPhoto ? (
-            <Image source={{ uri: currentPhoto }} style={s.avatar} />
+            <Image source={{ uri: currentPhoto }} style={styles.avatar} />
           ) : (
-            <View style={[s.avatar, s.avatarPlaceholder]}>
-              <MaterialCommunityIcons name="account" size={72} color={T.secondary} />
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <MaterialCommunityIcons name="account" size={72} color={theme.secondary} />
             </View>
           )}
           {editing && (
-            <View style={s.cameraOverlay}>
+            <View style={styles.cameraOverlay}>
               <MaterialCommunityIcons name="camera" size={22} color="#FFFFFF" />
             </View>
           )}
         </TouchableOpacity>
 
-        <View style={s.card}>
-          <Text style={s.cardLabel}>Bio</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Bio</Text>
           {editing ? (
             <>
               <TextInput
-                style={s.bioInput}
+                style={styles.bioInput}
                 value={draftBio}
                 onChangeText={t => setDraftBio(t.slice(0, BIO_LIMIT))}
                 placeholder="Write something about yourself…"
-                placeholderTextColor={`${T.text}66`}
+                placeholderTextColor={`${theme.text}66`}
                 multiline
                 textAlignVertical="top"
                 autoFocus
               />
-              <Text style={s.charCount}>
+              <Text style={styles.charCount}>
                 {draftBio.length} / {BIO_LIMIT}
               </Text>
             </>
           ) : (
-            <Text style={[s.bioText, !currentBio && s.bioPlaceholder]}>
+            <Text style={[styles.bioText, !currentBio && styles.bioPlaceholder]}>
               {currentBio || 'Tap the pencil to add a bio…'}
             </Text>
           )}
         </View>
 
-        <View style={s.card}>
-          <Text style={s.cardLabel}>Daily Inspiration</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Daily Inspiration</Text>
           {quote ? (
             <>
-              <Text style={s.quoteText}>"{quote.q}"</Text>
-              <Text style={s.quoteAuthor}>— {quote.a}</Text>
-              <Text style={s.quoteAttribution}>Powered by ZenQuotes.io</Text>
+              <Text style={styles.quoteText}>"{quote.q}"</Text>
+              <Text style={styles.quoteAuthor}>— {quote.a}</Text>
+              <Text style={styles.quoteAttribution}>Powered by ZenQuotes.io</Text>
             </>
           ) : (
-            <Text style={s.bioPlaceholder}>Loading…</Text>
+            <Text style={styles.bioPlaceholder}>Loading…</Text>
           )}
         </View>
       </ScrollView>
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.background },
-  appbar: { backgroundColor: T.background },
-  appbarTitle: { color: T.text, fontWeight: '700', fontSize: 20 },
-  scroll: { padding: 16, paddingBottom: 40, alignItems: 'center', gap: 20 },
-
-  avatarWrap: { marginTop: 16, alignItems: 'center', justifyContent: 'center' },
-  avatar: { width: 120, height: 120, borderRadius: 60 },
-  avatarPlaceholder: {
-    backgroundColor: T.tertiary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cameraOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: T.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: T.background,
-  },
-
-  card: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: T.primary,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  quoteText: {
-    fontSize: 15,
-    color: T.text,
-    lineHeight: 23,
-    fontStyle: 'italic',
-    marginBottom: 8,
-  },
-  quoteAuthor: {
-    fontSize: 13,
-    color: T.primary,
-    fontWeight: '600',
-    marginBottom: 10,
-  },
-  quoteAttribution: {
-    fontSize: 11,
-    color: T.text,
-    opacity: 0.35,
-  },
-  bioText: {
-    fontSize: 15,
-    color: T.text,
-    lineHeight: 22,
-  },
-  bioPlaceholder: { opacity: 0.4, fontStyle: 'italic' },
-  bioInput: {
-    fontSize: 15,
-    color: T.text,
-    lineHeight: 22,
-    minHeight: 120,
-    padding: 0,
-  },
-  charCount: {
-    marginTop: 8,
-    fontSize: 12,
-    color: T.text,
-    opacity: 0.45,
-    textAlign: 'right',
-  },
-});
