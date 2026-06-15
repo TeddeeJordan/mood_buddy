@@ -27,7 +27,21 @@ jest.mock('expo-sqlite', () => ({
     execSync: jest.fn(),
     runSync: jest.fn(),
     getAllSync: jest.fn(() => []),
+    getFirstSync: jest.fn(() => ({ bio: '', photo_uri: null })),
   })),
+}));
+
+// ── expo-image-picker mock ────────────────────────────────────────────────────
+
+jest.mock('expo-image-picker', () => ({
+  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+}));
+
+// ── @expo/vector-icons mock ───────────────────────────────────────────────────
+
+jest.mock('@expo/vector-icons', () => ({
+  MaterialCommunityIcons: () => null,
 }));
 
 // ── react-native-paper: passthrough stubs (no JSX inside jest.mock) ──────────
@@ -39,7 +53,8 @@ jest.mock('react-native-paper', () => {
   return {
     Appbar: {
       Header: ({ children }: { children: unknown }) => createElement(View, null, children),
-      Action: ({ onPress }: { onPress?: () => void }) => createElement(TouchableOpacity, { onPress }),
+      Action: ({ onPress, icon }: { onPress?: () => void; icon?: string }) =>
+        createElement(TouchableOpacity, { onPress, testID: `appbar-action-${icon}` }),
       Content: ({ title }: { title: string }) => createElement(RNText, null, title),
     },
     Button: ({ children, onPress }: { children: unknown; onPress?: () => void }) =>
@@ -61,17 +76,26 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-// ── ProfileScreen ─────────────────────────────────────────────────────────────
+// ── ProfileScreen (smoke tests — comprehensive tests are in profile.test.tsx) ──
+// Use a never-resolving fetch so no async state update fires during render,
+// which would cause overlapping act() warnings and corrupt subsequent describe blocks.
 
 describe('ProfileScreen', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn().mockReturnValue(new Promise(() => {}));
+  });
+  afterEach(() => {
+    delete (global as any).fetch;
+  });
+
   it('renders the title', async () => {
     const { getByText } = await render(<ProfileScreen />);
     expect(getByText('Profile')).toBeTruthy();
   });
 
-  it('renders the placeholder text', async () => {
+  it('renders the bio placeholder when bio is empty', async () => {
     const { getByText } = await render(<ProfileScreen />);
-    expect(getByText('Profile coming soon.')).toBeTruthy();
+    expect(getByText('Tap the pencil to add a bio…')).toBeTruthy();
   });
 });
 

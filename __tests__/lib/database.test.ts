@@ -5,6 +5,7 @@ jest.mock('expo-sqlite', () => ({
     execSync: jest.fn(),
     runSync: jest.fn(),
     getAllSync: jest.fn(),
+    getFirstSync: jest.fn(),
   })),
 }));
 
@@ -15,10 +16,13 @@ import {
   getAllEntries,
   getEntriesForDateRange,
   getAllEntryDates,
+  initProfile,
+  getProfile,
+  saveProfile,
   type MoodEntry,
 } from '@/lib/database';
 
-type MockDb = { execSync: jest.Mock; runSync: jest.Mock; getAllSync: jest.Mock };
+type MockDb = { execSync: jest.Mock; runSync: jest.Mock; getAllSync: jest.Mock; getFirstSync: jest.Mock };
 
 // database.ts calls openDatabaseSync at load time; capture the returned mock object.
 let mockDb: MockDb;
@@ -32,6 +36,7 @@ beforeEach(() => {
   mockDb.execSync.mockClear();
   mockDb.runSync.mockClear();
   mockDb.getAllSync.mockClear();
+  mockDb.getFirstSync.mockClear();
 });
 
 describe('initDatabase', () => {
@@ -122,5 +127,48 @@ describe('getAllEntryDates', () => {
   it('returns an empty array when there are no entries', () => {
     mockDb.getAllSync.mockReturnValueOnce([]);
     expect(getAllEntryDates()).toEqual([]);
+  });
+});
+
+describe('initProfile', () => {
+  it('creates the profile table and inserts the default row', () => {
+    initProfile();
+    expect(mockDb.execSync).toHaveBeenCalledTimes(1);
+    const sql: string = mockDb.execSync.mock.calls[0][0];
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS profile');
+    expect(sql).toContain('INSERT OR IGNORE INTO profile');
+  });
+});
+
+describe('getProfile', () => {
+  it('queries the profile table and returns the row', () => {
+    mockDb.getFirstSync.mockReturnValueOnce({ bio: 'Hello world', photo_uri: 'file://photo.jpg' });
+    const profile = getProfile();
+    expect(mockDb.getFirstSync).toHaveBeenCalledWith(
+      expect.stringContaining('SELECT bio, photo_uri FROM profile'),
+    );
+    expect(profile).toEqual({ bio: 'Hello world', photo_uri: 'file://photo.jpg' });
+  });
+
+  it('returns a default profile when no row exists', () => {
+    mockDb.getFirstSync.mockReturnValueOnce(null);
+    const profile = getProfile();
+    expect(profile).toEqual({ bio: '', photo_uri: null });
+  });
+});
+
+describe('saveProfile', () => {
+  it('calls runSync with the correct UPDATE SQL and parameters', () => {
+    saveProfile({ bio: 'My bio', photo_uri: 'file://photo.jpg' });
+    expect(mockDb.runSync).toHaveBeenCalledTimes(1);
+    const [sql, params] = mockDb.runSync.mock.calls[0];
+    expect(sql).toContain('UPDATE profile SET bio = ?');
+    expect(params).toEqual(['My bio', 'file://photo.jpg']);
+  });
+
+  it('coerces null photo_uri to null in params', () => {
+    saveProfile({ bio: 'No photo', photo_uri: null });
+    const params = mockDb.runSync.mock.calls[0][1];
+    expect(params[1]).toBeNull();
   });
 });
