@@ -19,8 +19,8 @@ export default function HomeScreen() {
   const [anxiety, setAnxiety] = useState<number | null>(null);
   const [anxietyNote, setAnxietyNote] = useState('');
 
-  const showStressInput = stress !== null && stress >= 4;
-  const showAnxietyInput = anxiety !== null && anxiety >= 4;
+  const showStressInput = stress !== null && stress <= 2;
+  const showAnxietyInput = anxiety !== null && anxiety <= 2;
 
   function handleSubmit() {
     if (mood === null || stress === null || anxiety === null) {
@@ -48,12 +48,12 @@ export default function HomeScreen() {
 
   function handleStressSelect(value: number) {
     setStress(value);
-    if (value < 4) setStressNote('');
+    if (value > 2) setStressNote('');
   }
 
   function handleAnxietySelect(value: number) {
     setAnxiety(value);
-    if (value < 4) setAnxietyNote('');
+    if (value > 2) setAnxietyNote('');
   }
 
   return (
@@ -83,8 +83,10 @@ export default function HomeScreen() {
 
         {showStressInput && (
           <View style={styles.noteBlock}>
+            <Text style={styles.noteLabel}>
+              What do you think is stressing you out?
+            </Text>
             <TextInput
-              label="What do you think is stressing you out?"
               value={stressNote}
               onChangeText={setStressNote}
               multiline
@@ -104,8 +106,10 @@ export default function HomeScreen() {
 
         {showAnxietyInput && (
           <View style={styles.noteBlock}>
+            <Text style={styles.noteLabel}>
+              Have you thought about what is triggering your anxiety?
+            </Text>
             <TextInput
-              label="Have you thought about what is triggering your anxiety?"
               value={anxietyNote}
               onChangeText={setAnxietyNote}
               multiline
@@ -166,6 +170,12 @@ const styles = StyleSheet.create({
   },
   noteBlock: {
     marginTop: 12,
+  },
+  noteLabel: {
+    fontSize: 14,
+    color: Themes.lavender.text,
+    fontWeight: '500',
+    marginBottom: 8,
   },
   textInput: {
     backgroundColor: '#FFFFFF',
