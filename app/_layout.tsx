@@ -1,24 +1,46 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { MD3LightTheme, PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Themes } from '@/constants/theme';
+import { initDatabase } from '@/lib/database';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: '(drawer)',
+};
+
+const paperTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: Themes.lavender.primary,
+    primaryContainer: Themes.lavender.tertiary,
+    secondary: Themes.lavender.secondary,
+    secondaryContainer: Themes.lavender.tertiary,
+    background: Themes.lavender.background,
+    surface: '#FFFFFF',
+    onPrimary: '#FFFFFF',
+    onBackground: Themes.lavender.text,
+    onSurface: Themes.lavender.text,
+    outline: Themes.lavender.secondary,
+  },
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    initDatabase();
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider theme={paperTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(drawer)" />
+        </Stack>
+        <StatusBar style="auto" />
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
 }
