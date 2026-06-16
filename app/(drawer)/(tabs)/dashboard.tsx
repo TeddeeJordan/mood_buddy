@@ -330,8 +330,16 @@ export default function DashboardScreen() {
   const moodBars = buildBars(visible, range, 'mood');
   const stressBars = buildBars(visible, range, 'stress');
   const anxietyBars = buildBars(visible, range, 'anxiety');
-  const topStressors = parseTopWords(visible.map(e => e.stress_note), 5);
-  const topTriggers = parseTopWords(visible.map(e => e.anxiety_note), 5);
+  const topStressors = parseTopWords([
+    ...visible.map(e => e.stress_note_1),
+    ...visible.map(e => e.stress_note_2),
+    ...visible.map(e => e.stress_note_3),
+  ], 5);
+  const topTriggers = parseTopWords([
+    ...visible.map(e => e.anxiety_note_1),
+    ...visible.map(e => e.anxiety_note_2),
+    ...visible.map(e => e.anxiety_note_3),
+  ], 5);
   const streak = computeStreak(allDates);
 
   return (

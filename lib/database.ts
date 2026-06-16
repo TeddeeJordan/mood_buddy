@@ -10,9 +10,13 @@ export type MoodEntry = {
   timestamp: string;
   mood: number;
   stress: number;
-  stress_note: string | null;
+  stress_note_1: string | null;
+  stress_note_2: string | null;
+  stress_note_3: string | null;
   anxiety: number;
-  anxiety_note: string | null;
+  anxiety_note_1: string | null;
+  anxiety_note_2: string | null;
+  anxiety_note_3: string | null;
 };
 
 export function initDatabase() {
@@ -22,18 +26,43 @@ export function initDatabase() {
       timestamp TEXT NOT NULL,
       mood INTEGER NOT NULL,
       stress INTEGER NOT NULL,
-      stress_note TEXT,
+      stress_note_1 TEXT,
+      stress_note_2 TEXT,
+      stress_note_3 TEXT,
       anxiety INTEGER NOT NULL,
-      anxiety_note TEXT
+      anxiety_note_1 TEXT,
+      anxiety_note_2 TEXT,
+      anxiety_note_3 TEXT
     );
   `);
+  // Migration: add per-item columns if upgrading from old single-column schema
+  const cols = new Set(
+    db.getAllSync<{ name: string }>('PRAGMA table_info(mood_entries)').map(r => r.name),
+  );
+  if (!cols.has('stress_note_1')) {
+    db.execSync('ALTER TABLE mood_entries ADD COLUMN stress_note_1 TEXT');
+    db.execSync('ALTER TABLE mood_entries ADD COLUMN stress_note_2 TEXT');
+    db.execSync('ALTER TABLE mood_entries ADD COLUMN stress_note_3 TEXT');
+    db.execSync('ALTER TABLE mood_entries ADD COLUMN anxiety_note_1 TEXT');
+    db.execSync('ALTER TABLE mood_entries ADD COLUMN anxiety_note_2 TEXT');
+    db.execSync('ALTER TABLE mood_entries ADD COLUMN anxiety_note_3 TEXT');
+    if (cols.has('stress_note')) {
+      db.execSync('UPDATE mood_entries SET stress_note_1 = stress_note');
+      db.execSync('UPDATE mood_entries SET anxiety_note_1 = anxiety_note');
+    }
+  }
 }
 
 export function insertMoodEntry(entry: Omit<MoodEntry, 'id'>) {
   return db.runSync(
-    `INSERT INTO mood_entries (timestamp, mood, stress, stress_note, anxiety, anxiety_note)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [entry.timestamp, entry.mood, entry.stress, entry.stress_note ?? null, entry.anxiety, entry.anxiety_note ?? null]
+    `INSERT INTO mood_entries (timestamp, mood, stress, stress_note_1, stress_note_2, stress_note_3, anxiety, anxiety_note_1, anxiety_note_2, anxiety_note_3)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      entry.timestamp, entry.mood, entry.stress,
+      entry.stress_note_1 ?? null, entry.stress_note_2 ?? null, entry.stress_note_3 ?? null,
+      entry.anxiety,
+      entry.anxiety_note_1 ?? null, entry.anxiety_note_2 ?? null, entry.anxiety_note_3 ?? null,
+    ],
   );
 }
 

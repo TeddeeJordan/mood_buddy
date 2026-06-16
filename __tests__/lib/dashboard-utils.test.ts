@@ -155,7 +155,7 @@ describe('parseTopWords', () => {
 // ── buildBars ─────────────────────────────────────────────────────────────────
 
 function makeEntry(timestamp: string, mood = 3, stress = 3, anxiety = 3): MoodEntry {
-  return { id: 1, timestamp, mood, stress, stress_note: null, anxiety, anxiety_note: null };
+  return { id: 1, timestamp, mood, stress, stress_note_1: null, stress_note_2: null, stress_note_3: null, anxiety, anxiety_note_1: null, anxiety_note_2: null, anxiety_note_3: null };
 }
 
 describe('buildBars', () => {
