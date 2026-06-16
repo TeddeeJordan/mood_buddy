@@ -1,7 +1,7 @@
 import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Appbar, Button, Text, TextInput } from 'react-native-paper';
 import { EmojiPicker } from '@/components/emoji-picker';
@@ -80,6 +80,8 @@ export default function HomeScreen() {
   const { theme } = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
+  const { backgroundImage } = useAppTheme();
+
   const [mood, setMood] = useState<number | null>(null);
   const [stress, setStress] = useState<number | null>(null);
   const [stressNote, setStressNote] = useState('');
@@ -124,7 +126,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ImageBackground source={backgroundImage} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 0.35 }}>
       <Appbar.Header style={styles.appbar} elevated>
         <Appbar.Action
           icon="menu"
@@ -201,6 +203,6 @@ export default function HomeScreen() {
           Submit
         </Button>
       </View>
-    </View>
+    </ImageBackground>
   );
 }

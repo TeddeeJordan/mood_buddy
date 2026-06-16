@@ -34,6 +34,12 @@ export const Themes: Record<ThemeName, ThemePalette> = {
   },
 };
 
+export const ThemeBackgrounds: Record<ThemeName, number> = {
+  lavender: require('../assets/images/lavender.png'),
+  sage: require('../assets/images/sage.jpeg'),
+  water: require('../assets/images/water.png'),
+};
+
 export const Colors = {
   light: {
     text: Themes.lavender.text,
