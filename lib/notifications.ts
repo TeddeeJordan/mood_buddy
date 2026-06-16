@@ -22,17 +22,10 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 export async function scheduleDailyReminder(hour: number, minute: number): Promise<void> {
   await cancelDailyReminder();
 
-  // "Log Mood" opens the app — on Apple Watch this mirrors and opens the phone app.
-  // "Open on Phone" is a clearly-labeled action for watch users.
   await Notifications.setNotificationCategoryAsync(CATEGORY_ID, [
     {
       identifier: 'LOG_MOOD',
       buttonTitle: 'Log Mood',
-      options: { opensAppToForeground: true },
-    },
-    {
-      identifier: 'OPEN_ON_PHONE',
-      buttonTitle: 'Open on Phone',
       options: { opensAppToForeground: true },
     },
   ]);
