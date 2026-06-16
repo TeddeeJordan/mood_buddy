@@ -1,50 +1,92 @@
-# Welcome to your Expo app 👋
+# Mood Buddy
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A personal mood tracking app for iOS and Android, built with Expo and React Native. Log how you're feeling each day, identify patterns in your stress and anxiety triggers, and optionally talk through your emotions with an AI companion.
 
-## Get started
+## Intent
 
-1. Install dependencies
+Mood Buddy helps users build self-awareness around their emotional state by making it fast and frictionless to record mood, stress, and anxiety each day. Over time the app surfaces patterns — which stressors keep showing up, what triggers anxiety, how mood trends across weeks and months — so users can better understand their own mental and emotional landscape.
 
-   ```bash
-   npm install
-   ```
+## Features
 
-2. Start the app
+### Mood Check-In
+Log three dimensions of your current state using emoji-based pickers:
+- **Mood** — overall feeling (5 options from very low to great)
+- **Stress** — stress level; high-stress days unlock up to 3 free-text stressor fields
+- **Anxiety** — anxiety level; high-anxiety days unlock up to 3 free-text trigger fields
 
-   ```bash
-   npx expo start
-   ```
+Each submission saves a timestamped entry to local SQLite storage and generates a natural-language diary prompt summarising what was logged.
 
-In the output, you'll find options to open the app in a
+### Dashboard
+Visualise your data across the past week, month, or year:
+- Bar charts for mood, stress, and anxiety over time (with emoji markers at each data point)
+- Word clouds for top stressors and top anxiety triggers, sized by frequency
+- Daily streak counter to encourage consistent check-ins
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Diary
+Browse past check-in summaries by date using an interactive range calendar. Select a single day or a date range (up to 30 days) to see the diary entries generated from those sessions. Entries are retained for 90 days.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### AI Chat (optional)
+After logging a mood entry, users can optionally chat with Claude (Anthropic's AI) about how they're feeling. The chat screen is pre-seeded with the current mood context so Claude can open the conversation with relevant insight. Requires a personal Anthropic API key entered in Settings.
 
-## Get a fresh project
+### Settings
+- **Theme** — choose from Water, Lavender, or Sage colour palettes; persisted across sessions
+- **Notifications** — enable a daily reminder at a custom time (iOS spinner / Android native picker)
+- **AI integration** — toggle AI chat and manage your Anthropic API key (stored locally, never sent anywhere except the Anthropic API)
 
-When you're ready, run:
+### Profile
+A personal bio and optional photo, stored locally on-device.
 
-```bash
-npm run reset-project
+## Tech Stack
+
+| Layer | Library |
+|---|---|
+| Framework | [Expo](https://expo.dev) ~54.0 / React Native 0.81 |
+| Language | TypeScript ~5.9 |
+| Navigation | expo-router (file-based) + React Navigation drawer + bottom tabs |
+| UI components | react-native-paper (Material Design 3) |
+| Local storage | expo-sqlite (SQLite, all data stays on device) |
+| Notifications | expo-notifications |
+| AI | Anthropic Claude API (`claude-sonnet-4-6`) via direct HTTP |
+| Animations | react-native-reanimated, react-native-gesture-handler |
+| Image picker | expo-image-picker |
+
+## Project Structure
+
+```
+app/
+  (drawer)/
+    (tabs)/
+      index.tsx        # Mood check-in (Home tab)
+      dashboard.tsx    # Charts and insights (Dashboard tab)
+    chat.tsx           # AI conversation screen
+    diary.tsx          # Calendar-based diary browser
+    profile.tsx        # User profile
+    settings.tsx       # Theme / notifications / AI settings
+components/
+  emoji-picker.tsx     # Reusable emoji option selector
+constants/
+  mood-data.ts         # Mood, stress, and anxiety option sets
+  theme.ts             # Theme palettes (Water, Lavender, Sage)
+context/
+  ThemeContext.tsx     # Dynamic theme + background image provider
+lib/
+  claude.ts            # Anthropic API client
+  dashboard-utils.ts   # Chart data builders, streak logic, word parsing
+  database.ts          # SQLite schema, migrations, and query helpers
+  notifications.ts     # Daily reminder scheduling
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Getting Started
 
-## Learn more
+```bash
+npm install
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Open in an iOS simulator, Android emulator, or on a physical device via [Expo Go](https://expo.dev/go).
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+To use the AI chat feature, obtain an API key from [console.anthropic.com](https://console.anthropic.com) and enter it in the app's Settings screen. This is separate from a Claude.ai subscription.
 
-## Join the community
+## Data & Privacy
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+All mood entries, diary prompts, profile data, and settings are stored locally on the device using SQLite. Nothing is synced to a server. The only external network call the app makes is to the Anthropic API when the AI chat feature is actively used (opt-in, requires your own API key).
