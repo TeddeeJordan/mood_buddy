@@ -90,6 +90,43 @@ export function setSetting(key: string, value: string): void {
   db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [key, value]);
 }
 
+export type DiaryPrompt = {
+  id: number;
+  timestamp: string;
+  prompt: string;
+};
+
+export function initDiaryPrompts() {
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS diary_prompts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timestamp TEXT NOT NULL,
+      prompt TEXT NOT NULL
+    );
+  `);
+}
+
+export function insertDiaryPrompt(prompt: string) {
+  const timestamp = new Date().toISOString();
+  db.runSync(
+    'INSERT INTO diary_prompts (timestamp, prompt) VALUES (?, ?)',
+    [timestamp, prompt],
+  );
+  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  db.runSync('DELETE FROM diary_prompts WHERE timestamp < ?', [cutoff]);
+}
+
+export function getAllDiaryPrompts(): DiaryPrompt[] {
+  return db.getAllSync<DiaryPrompt>('SELECT * FROM diary_prompts ORDER BY timestamp DESC');
+}
+
+export function getDiaryPromptsForRange(startISO: string, endISO: string): DiaryPrompt[] {
+  return db.getAllSync<DiaryPrompt>(
+    'SELECT * FROM diary_prompts WHERE timestamp >= ? AND timestamp <= ? ORDER BY timestamp DESC',
+    [startISO, endISO],
+  );
+}
+
 export function getAllEntryDates(): string[] {
   const rows = db.getAllSync<{ timestamp: string }>(
     'SELECT timestamp FROM mood_entries ORDER BY timestamp DESC',

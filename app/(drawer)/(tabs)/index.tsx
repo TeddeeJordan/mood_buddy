@@ -8,7 +8,7 @@ import { EmojiPicker } from '@/components/emoji-picker';
 import { ANXIETY_OPTIONS, MOOD_OPTIONS, STRESS_OPTIONS } from '@/constants/mood-data';
 import type { ThemePalette } from '@/constants/theme';
 import { useAppTheme } from '@/context/ThemeContext';
-import { insertMoodEntry } from '@/lib/database';
+import { insertDiaryPrompt, insertMoodEntry } from '@/lib/database';
 
 function makeStyles(theme: ThemePalette) {
   return StyleSheet.create({
@@ -91,6 +91,31 @@ export default function HomeScreen() {
   const showStressInput = stress !== null && stress <= 2;
   const showAnxietyInput = anxiety !== null && anxiety <= 2;
 
+  function buildPrompt(
+    moodVal: number,
+    stressVal: number,
+    stressNoteVal: string,
+    anxietyVal: number,
+    anxietyNoteVal: string,
+  ): string {
+    const moodLabel = MOOD_OPTIONS.find((o) => o.value === moodVal)?.label ?? String(moodVal);
+    const stressLabel = STRESS_OPTIONS.find((o) => o.value === stressVal)?.label ?? String(stressVal);
+    const anxietyLabel = ANXIETY_OPTIONS.find((o) => o.value === anxietyVal)?.label ?? String(anxietyVal);
+
+    const parts: string[] = [];
+    parts.push(`Right now I feel ${moodLabel}.`);
+    parts.push(`My stress level is ${stressLabel}.`);
+    if (stressVal <= 2 && stressNoteVal.trim()) {
+      parts.push(`My main stressors right now are ${stressNoteVal.trim()}.`);
+    }
+    parts.push(`My anxiety level is ${anxietyLabel}.`);
+    if (anxietyVal <= 2 && anxietyNoteVal.trim()) {
+      parts.push(`My anxiety triggers are ${anxietyNoteVal.trim()}.`);
+    }
+    parts.push('I would like to talk about my feelings and get insight.');
+    return parts.join(' ');
+  }
+
   function handleSubmit() {
     if (mood === null || stress === null || anxiety === null) {
       Alert.alert('Incomplete', 'Please select your mood, stress, and anxiety levels before submitting.');
@@ -105,6 +130,8 @@ export default function HomeScreen() {
       anxiety,
       anxiety_note: showAnxietyInput ? anxietyNote.trim() || null : null,
     });
+
+    insertDiaryPrompt(buildPrompt(mood, stress, stressNote, anxiety, anxietyNote));
 
     setMood(null);
     setStress(null);
