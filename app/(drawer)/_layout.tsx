@@ -18,6 +18,7 @@ type DrawerItem = {
 const DRAWER_ITEMS: DrawerItem[] = [
   { label: 'Home', href: '/', icon: 'home-outline', iconActive: 'home' },
   { label: 'Dashboard', href: '/dashboard', icon: 'bar-chart-outline', iconActive: 'bar-chart' },
+  { label: 'Diary', href: '/diary', icon: 'journal-outline', iconActive: 'journal' },
   { label: 'Profile', href: '/profile', icon: 'person-outline', iconActive: 'person' },
   { label: 'Settings', href: '/settings', icon: 'settings-outline', iconActive: 'settings' },
 ];
@@ -120,6 +121,7 @@ export default function DrawerLayout() {
       screenOptions={{ headerShown: false }}
     >
       <Drawer.Screen name="(tabs)" />
+      <Drawer.Screen name="diary" />
       <Drawer.Screen name="profile" />
       <Drawer.Screen name="settings" />
     </Drawer>

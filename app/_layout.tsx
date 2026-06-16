@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
 import { ThemeProvider, useAppTheme } from '@/context/ThemeContext';
-import { initDatabase, initProfile } from '@/lib/database';
+import { initDatabase, initDiaryPrompts, initProfile } from '@/lib/database';
 
 export const unstable_settings = {
   anchor: '(drawer)',
@@ -31,6 +31,7 @@ export default function RootLayout() {
   useEffect(() => {
     initDatabase();
     initProfile();
+    initDiaryPrompts();
   }, []);
 
   useEffect(() => {
