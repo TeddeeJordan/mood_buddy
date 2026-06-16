@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { MD3LightTheme, type MD3Theme } from 'react-native-paper';
-import { type ThemeName, type ThemePalette, Themes } from '@/constants/theme';
+import { type ThemeName, type ThemePalette, ThemeBackgrounds, Themes } from '@/constants/theme';
 import { getSetting, setSetting } from '@/lib/database';
 
 type ThemeContextValue = {
@@ -8,6 +8,7 @@ type ThemeContextValue = {
   themeName: ThemeName;
   setThemeName: (name: ThemeName) => void;
   paperTheme: MD3Theme;
+  backgroundImage: number;
 };
 
 function buildPaperTheme(palette: ThemePalette): MD3Theme {
@@ -34,6 +35,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   themeName: 'lavender',
   setThemeName: () => {},
   paperTheme: buildPaperTheme(Themes.lavender),
+  backgroundImage: ThemeBackgrounds.lavender,
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -45,6 +47,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const theme = Themes[themeName];
   const paperTheme = useMemo(() => buildPaperTheme(theme), [theme]);
+  const backgroundImage = ThemeBackgrounds[themeName];
 
   function setThemeName(name: ThemeName) {
     setThemeNameState(name);
@@ -52,7 +55,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, themeName, setThemeName, paperTheme }}>
+    <ThemeContext.Provider value={{ theme, themeName, setThemeName, paperTheme, backgroundImage }}>
       {children}
     </ThemeContext.Provider>
   );

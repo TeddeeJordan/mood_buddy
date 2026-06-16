@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
@@ -301,7 +302,7 @@ function makeScreenStyles(theme: ThemePalette) {
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
-  const { theme } = useAppTheme();
+  const { theme, backgroundImage } = useAppTheme();
   const styles = useMemo(() => makeScreenStyles(theme), [theme]);
 
   const [range, setRange] = useState<RangeType>('week');
@@ -334,7 +335,7 @@ export default function DashboardScreen() {
   const streak = computeStreak(allDates);
 
   return (
-    <View style={styles.container}>
+    <ImageBackground source={backgroundImage} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 0.35 }}>
       <Appbar.Header style={styles.appbar} elevated>
         <Appbar.Action
           icon="menu"
@@ -380,6 +381,6 @@ export default function DashboardScreen() {
           <StreakCounter streak={streak} />
         </View>
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }

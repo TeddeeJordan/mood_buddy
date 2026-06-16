@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Image,
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
@@ -111,7 +112,7 @@ function makeStyles(theme: ThemePalette) {
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { theme } = useAppTheme();
+  const { theme, backgroundImage } = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   const [editing, setEditing] = useState(false);
@@ -179,7 +180,7 @@ export default function ProfileScreen() {
   const currentBio = editing ? draftBio : bio;
 
   return (
-    <View style={styles.container}>
+    <ImageBackground source={backgroundImage} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 0.35 }}>
       <Appbar.Header style={styles.appbar} elevated>
         <Appbar.Action
           icon="menu"
@@ -259,6 +260,6 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }

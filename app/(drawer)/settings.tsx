@@ -2,7 +2,7 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ImageBackground, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Appbar, Switch, Text } from 'react-native-paper';
 import type { ThemeName, ThemePalette } from '@/constants/theme';
 import { Themes } from '@/constants/theme';
@@ -288,11 +288,11 @@ function makeStyles(theme: ThemePalette) {
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
-  const { theme } = useAppTheme();
+  const { theme, backgroundImage } = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   return (
-    <View style={styles.container}>
+    <ImageBackground source={backgroundImage} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 0.35 }}>
       <Appbar.Header style={styles.appbar} elevated>
         <Appbar.Action
           icon="menu"
@@ -309,6 +309,6 @@ export default function SettingsScreen() {
         <ThemePicker />
         <NotificationsSection />
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
