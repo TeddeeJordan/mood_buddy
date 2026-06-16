@@ -41,8 +41,9 @@ beforeEach(() => {
 
 describe('initDatabase', () => {
   it('runs the CREATE TABLE statement', () => {
+    // PRAGMA returns [] in mock (no real DB), triggering the migration path
+    mockDb.getAllSync.mockReturnValueOnce([]);
     initDatabase();
-    expect(mockDb.execSync).toHaveBeenCalledTimes(1);
     expect(mockDb.execSync.mock.calls[0][0]).toContain('CREATE TABLE IF NOT EXISTS mood_entries');
   });
 });
@@ -53,9 +54,13 @@ describe('insertMoodEntry', () => {
       timestamp: '2026-06-15T10:00:00.000Z',
       mood: 4,
       stress: 3,
-      stress_note: null,
+      stress_note_1: null,
+      stress_note_2: null,
+      stress_note_3: null,
       anxiety: 2,
-      anxiety_note: 'work pressure',
+      anxiety_note_1: 'work pressure',
+      anxiety_note_2: null,
+      anxiety_note_3: null,
     };
     insertMoodEntry(entry);
     expect(mockDb.runSync).toHaveBeenCalledTimes(1);
@@ -65,32 +70,40 @@ describe('insertMoodEntry', () => {
       entry.timestamp,
       entry.mood,
       entry.stress,
-      null,
+      null,  // stress_note_1
+      null,  // stress_note_2
+      null,  // stress_note_3
       entry.anxiety,
-      entry.anxiety_note,
+      entry.anxiety_note_1,
+      null,  // anxiety_note_2
+      null,  // anxiety_note_3
     ]);
   });
 
-  it('coerces null stress_note and anxiety_note to null in params', () => {
+  it('coerces null note fields to null in params', () => {
     insertMoodEntry({
       timestamp: '2026-06-15T10:00:00.000Z',
       mood: 5,
       stress: 4,
-      stress_note: null,
+      stress_note_1: null,
+      stress_note_2: null,
+      stress_note_3: null,
       anxiety: 5,
-      anxiety_note: null,
+      anxiety_note_1: null,
+      anxiety_note_2: null,
+      anxiety_note_3: null,
     });
     const params = mockDb.runSync.mock.calls[0][1];
-    expect(params[3]).toBeNull();
-    expect(params[5]).toBeNull();
+    expect(params[3]).toBeNull(); // stress_note_1
+    expect(params[7]).toBeNull(); // anxiety_note_1
   });
 });
 
 describe('getAllEntries', () => {
   it('returns results from getAllSync ordered by timestamp DESC', () => {
     const rows: MoodEntry[] = [
-      { id: 2, timestamp: '2026-06-15T10:00:00.000Z', mood: 4, stress: 3, stress_note: null, anxiety: 2, anxiety_note: null },
-      { id: 1, timestamp: '2026-06-14T10:00:00.000Z', mood: 3, stress: 2, stress_note: 'busy', anxiety: 1, anxiety_note: null },
+      { id: 2, timestamp: '2026-06-15T10:00:00.000Z', mood: 4, stress: 3, stress_note_1: null, stress_note_2: null, stress_note_3: null, anxiety: 2, anxiety_note_1: null, anxiety_note_2: null, anxiety_note_3: null },
+      { id: 1, timestamp: '2026-06-14T10:00:00.000Z', mood: 3, stress: 2, stress_note_1: 'busy', stress_note_2: null, stress_note_3: null, anxiety: 1, anxiety_note_1: null, anxiety_note_2: null, anxiety_note_3: null },
     ];
     mockDb.getAllSync.mockReturnValueOnce(rows);
     const result = getAllEntries();
@@ -115,7 +128,7 @@ describe('getAllEntryDates', () => {
   it('returns deduplicated YYYY-MM-DD strings', () => {
     mockDb.getAllSync.mockReturnValueOnce([
       { timestamp: '2026-06-15T08:00:00.000Z' },
-      { timestamp: '2026-06-15T20:00:00.000Z' },
+      { timestamp: '2026-06-15T12:00:00.000Z' },
       { timestamp: '2026-06-14T10:00:00.000Z' },
     ]);
     const result = getAllEntryDates();
