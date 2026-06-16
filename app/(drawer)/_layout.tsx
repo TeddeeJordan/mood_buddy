@@ -124,6 +124,7 @@ export default function DrawerLayout() {
       <Drawer.Screen name="diary" />
       <Drawer.Screen name="profile" />
       <Drawer.Screen name="settings" />
+      <Drawer.Screen name="chat" />
     </Drawer>
   );
 }

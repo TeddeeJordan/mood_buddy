@@ -3,7 +3,7 @@ import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, ImageBackground, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Switch, Text } from 'react-native-paper';
+import { Appbar, Switch, Text, TextInput } from 'react-native-paper';
 import type { ThemeName, ThemePalette } from '@/constants/theme';
 import { Themes } from '@/constants/theme';
 import { useAppTheme } from '@/context/ThemeContext';
@@ -170,6 +170,56 @@ function NotificationsSection() {
   );
 }
 
+// ── AI Integration section ─────────────────────────────────────────────────────
+
+function AIIntegrationSection() {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+
+  const [enabled, setEnabled] = useState(() => getSetting('ai_integration_enabled') === 'true');
+  const [apiKey, setApiKey] = useState(() => getSetting('anthropic_api_key') ?? '');
+  const [showKey, setShowKey] = useState(false);
+
+  function handleToggle(value: boolean) {
+    setEnabled(value);
+    setSetting('ai_integration_enabled', String(value));
+  }
+
+  function handleApiKeyChange(value: string) {
+    setApiKey(value);
+    setSetting('anthropic_api_key', value.trim());
+  }
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.sectionLabel}>AI</Text>
+      <View style={styles.row}>
+        <Text style={styles.rowLabel}>Talk to AI Integration</Text>
+        <Switch value={enabled} onValueChange={handleToggle} color={theme.primary} />
+      </View>
+      <View style={styles.divider} />
+      <Text style={styles.rowLabel}>Anthropic API Key</Text>
+      <TextInput
+        value={apiKey}
+        onChangeText={handleApiKeyChange}
+        placeholder="sk-ant-api03-…"
+        secureTextEntry={!showKey}
+        mode="outlined"
+        style={styles.apiKeyInput}
+        right={
+          <TextInput.Icon
+            icon={showKey ? 'eye-off' : 'eye'}
+            onPress={() => setShowKey(v => !v)}
+          />
+        }
+      />
+      <Text style={styles.apiKeyHint}>
+        Get your key at console.anthropic.com — separate from your Claude.ai subscription.
+      </Text>
+    </View>
+  );
+}
+
 // ── Styles factory ─────────────────────────────────────────────────────────────
 
 function makeStyles(theme: ThemePalette) {
@@ -281,6 +331,19 @@ function makeStyles(theme: ThemePalette) {
       fontSize: 20,
       fontWeight: '600',
     },
+
+    // AI section
+    apiKeyInput: {
+      backgroundColor: '#FFFFFF',
+      marginTop: 8,
+    },
+    apiKeyHint: {
+      fontSize: 12,
+      color: theme.text,
+      opacity: 0.55,
+      marginTop: 6,
+      lineHeight: 16,
+    },
   });
 }
 
@@ -308,6 +371,7 @@ export default function SettingsScreen() {
       >
         <ThemePicker />
         <NotificationsSection />
+        <AIIntegrationSection />
       </ScrollView>
     </ImageBackground>
   );

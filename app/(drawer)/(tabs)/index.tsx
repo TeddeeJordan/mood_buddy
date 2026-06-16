@@ -1,14 +1,15 @@
 import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Appbar, Button, Text, TextInput } from 'react-native-paper';
+import { Appbar, Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import { EmojiPicker } from '@/components/emoji-picker';
 import { ANXIETY_OPTIONS, MOOD_OPTIONS, STRESS_OPTIONS } from '@/constants/mood-data';
 import type { ThemePalette } from '@/constants/theme';
 import { useAppTheme } from '@/context/ThemeContext';
-import { insertDiaryPrompt, insertMoodEntry } from '@/lib/database';
+import { getSetting, insertDiaryPrompt, insertMoodEntry, setSetting } from '@/lib/database';
 
 function makeStyles(theme: ThemePalette) {
   return StyleSheet.create({
@@ -87,6 +88,9 @@ export default function HomeScreen() {
   const [stressNotes, setStressNotes] = useState<[string, string, string]>(['', '', '']);
   const [anxiety, setAnxiety] = useState<number | null>(null);
   const [anxietyNotes, setAnxietyNotes] = useState<[string, string, string]>(['', '', '']);
+  const [showAIPrompt, setShowAIPrompt] = useState(false);
+  const [showTalkDialog, setShowTalkDialog] = useState(false);
+  const [pendingPrompt, setPendingPrompt] = useState('');
 
   const showStressInput = stress !== null && stress <= 2;
   const showAnxietyInput = anxiety !== null && anxiety <= 2;
@@ -145,7 +149,9 @@ export default function HomeScreen() {
       anxiety_note_3: showAnxietyInput ? anxietyNotes[2].trim() || null : null,
     });
 
-    insertDiaryPrompt(buildPrompt(mood, stress, stressNotes, anxiety, anxietyNotes));
+    const prompt = buildPrompt(mood, stress, stressNotes, anxiety, anxietyNotes);
+    insertDiaryPrompt(prompt);
+    setPendingPrompt(prompt);
 
     setMood(null);
     setStress(null);
@@ -153,6 +159,41 @@ export default function HomeScreen() {
     setAnxiety(null);
     setAnxietyNotes(['', '', '']);
 
+    const aiEnabled = getSetting('ai_integration_enabled') === 'true';
+    const alreadyPrompted = getSetting('ai_chat_prompt_shown') === 'true';
+
+    if (!alreadyPrompted) {
+      // Flow 1 & 2: first-time — ask if they want to enable AI chat
+      setShowAIPrompt(true);
+    } else if (aiEnabled) {
+      // Flow 3: AI enabled, already prompted — ask if they want to chat today
+      setShowTalkDialog(true);
+    } else {
+      // Flow 4: AI disabled — just confirm saved
+      Alert.alert('Saved!', 'Your mood has been recorded.');
+    }
+  }
+
+  function handleAIPromptYes() {
+    setSetting('ai_integration_enabled', 'true');
+    setSetting('ai_chat_prompt_shown', 'true');
+    setShowAIPrompt(false);
+    router.push({ pathname: '/chat', params: { initialPrompt: pendingPrompt } });
+  }
+
+  function handleAIPromptNo() {
+    setSetting('ai_chat_prompt_shown', 'true');
+    setShowAIPrompt(false);
+    Alert.alert('Saved!', 'Your mood has been recorded.');
+  }
+
+  function handleTalkYes() {
+    setShowTalkDialog(false);
+    router.push({ pathname: '/chat', params: { initialPrompt: pendingPrompt } });
+  }
+
+  function handleTalkNo() {
+    setShowTalkDialog(false);
     Alert.alert('Saved!', 'Your mood has been recorded.');
   }
 
@@ -250,6 +291,30 @@ export default function HomeScreen() {
           Submit
         </Button>
       </View>
+
+      <Portal>
+        <Dialog visible={showAIPrompt} dismissable={false}>
+          <Dialog.Title>Chat about your feelings?</Dialog.Title>
+          <Dialog.Content>
+            <Text>Would you like the option to chat about your feelings with AI after logging your mood?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleAIPromptNo}>No Thank You</Button>
+            <Button onPress={handleAIPromptYes}>Yes</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        <Dialog visible={showTalkDialog} dismissable={false}>
+          <Dialog.Title>Talk about your mood?</Dialog.Title>
+          <Dialog.Content>
+            <Text>Would you like to chat about how you're feeling today?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleTalkNo}>No</Button>
+            <Button onPress={handleTalkYes}>Yes</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </ImageBackground>
   );
 }
