@@ -63,9 +63,14 @@ export default function RootLayout() {
       {!isReady && (
         <View style={styles.splash}>
           <Image
+            source={require('../assets/images/clouds.jpg')}
+            style={StyleSheet.absoluteFillObject}
+            contentFit="cover"
+          />
+          <Image
             source={require('../assets/images/clouds_spinner.gif')}
-            style={styles.gif}
-            contentFit="contain"
+            style={StyleSheet.absoluteFillObject}
+            contentFit="cover"
             autoplay
           />
         </View>
@@ -80,9 +85,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  gif: {
-    width: 200,
-    height: 200,
   },
 });
