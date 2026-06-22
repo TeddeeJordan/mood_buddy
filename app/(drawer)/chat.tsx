@@ -248,7 +248,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView
         style={[styles.keyboardView, Platform.OS === 'android' && { paddingBottom: androidKeyboardHeight }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + 56}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
           ref={scrollRef}
