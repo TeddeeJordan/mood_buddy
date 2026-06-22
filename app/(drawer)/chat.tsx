@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   ImageBackground,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -137,6 +138,7 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [apiKey] = useState<string | null>(() => getSetting('anthropic_api_key'));
+  const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const initialized = useRef(false);
   // Full conversation history sent to the API, including the hidden initial prompt
@@ -146,6 +148,17 @@ export default function ChatScreen() {
     const t = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     return () => clearTimeout(t);
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const show = Keyboard.addListener('keyboardDidShow', e => {
+      setAndroidKeyboardHeight(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => {
+      setAndroidKeyboardHeight(0);
+    });
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   // On mount: send the mood context to Claude silently so it can open the conversation
   useEffect(() => {
@@ -233,9 +246,9 @@ export default function ChatScreen() {
       </Appbar.Header>
 
       <KeyboardAvoidingView
-        style={styles.keyboardView}
+        style={[styles.keyboardView, Platform.OS === 'android' && { paddingBottom: androidKeyboardHeight }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={64}
+        keyboardVerticalOffset={insets.top + 56}
       >
         <ScrollView
           ref={scrollRef}
